@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SWP/BC test</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Reenie+Beanie&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+        font-family: "Barlow";
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .colorbox {
+        display: grid;
+        grid-template-columns: repeat(10, 20px);
+        color: #fff;
+      }
+      .colorbox div {
+        position: relative;
+        border: 1px solid #eee;
+        height: 50px;
+        background-color: #fff;
+      }
+      .tb {
+        margin: 10px;
+        display: inline-flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .tb h2 {
+        font-size: 22px;
+        white-space: nowrap;
+        font-weight: 200;
+      }
+      .colorbox div:before {
+        content: "send";
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translateY(50px) rotate(90deg) rotateZ(180deg);
+        font-size: 16px;
+        line-height: 1;
+        width: 50px;
+        text-align: center;
+        transform-origin: top left;
+      }
+      .colorbox div:nth-child(n + 11):before {
+        content: "recv";
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="tb">
+        <h2>SharedWorker.port</h2>
+        <div id="cbwp" class="colorbox">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <div class="tb">
+        <h2>BroadcastChannel</h2>
+        <div id="cbbc" class="colorbox">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var worker = new SharedWorker("sw.js");
+      worker.port.onmessage = (e) => {
+        const id = e.data.id;
+        const bc_send = new BroadcastChannel(id + "_s");
+        const bc_recv = new BroadcastChannel(id + "_r");
+        worker.port.onmessage = (e) => {
+          const { n } = e.data;
+          anim(cbwp.children[n + 10], "#f09");
+        };
+        bc_recv.onmessage = (e) => {
+          const { n } = e.data;
+          anim(cbbc.children[n + 10], "#f09");
+        };
+        let n = 0;
+        const anim = (target, color) => {
+          target.animate(
+            { backgroundColor: [color, "#fff"] },
+            {
+              easing: "ease",
+              duration: 600,
+            }
+          );
+        };
+        setInterval(() => {
+          anim(cbwp.children[n], "#09f");
+          anim(cbbc.children[n], "#09f");
+          worker.port.postMessage({ n });
+          bc_send.postMessage({ n });
+          n++;
+          if (n > 9) n = 0;
+        }, 250);
+      };
+      worker.port.start();
+    </script>
+  </body>
+</html>
