@@ -88,7 +88,7 @@
       </div>
     </div>
     <script>
-      var worker = new SharedWorker("sw.js");
+      var worker = new SharedWorker("swonly.js");
       worker.port.onmessage = (e) => {
         const id = e.data.id;
         worker.port.onmessage = (e) => {
